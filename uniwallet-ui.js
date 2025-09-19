@@ -5,30 +5,10 @@
     return;
   }
 
-  // Popular wallets + their official download links
-  const knownWallets = [
-    { name: "MetaMask", type: "evm", url: "https://metamask.io/download.html" },
-    { name: "Coinbase Wallet", type: "evm", url: "https://www.coinbase.com/wallet" },
-    { name: "Brave Wallet", type: "evm", url: "https://brave.com/wallet/" },
-    { name: "Phantom (Solana)", type: "solana", url: "https://phantom.app/download" },
-    { name: "Solflare (Solana)", type: "solana", url: "https://solflare.com/download" },
-    { name: "TronLink", type: "tron", url: "https://www.tronlink.org/" },
-    { name: "NEAR Wallet", type: "near", url: "https://wallet.near.org/" },
-    { name: "Petra (Aptos)", type: "aptos", url: "https://petra.app/" },
-    { name: "Martian (Aptos)", type: "aptos", url: "https://martianwallet.xyz/" },
-    { name: "Keplr (Cosmos)", type: "cosmos", url: "https://www.keplr.app/download" },
-    { name: "Leap (Cosmos)", type: "cosmos", url: "https://www.leapwallet.io/" },
-    { name: "Pera (Algorand)", type: "algorand", url: "https://perawallet.app/" },
-    { name: "Temple (Tezos)", type: "tezos", url: "https://templewallet.com/" },
-    { name: "Plug (ICP)", type: "icp", url: "https://plugwallet.ooo/" },
-    { name: "Polkadot.js", type: "polkadot", url: "https://polkadot.js.org/extension/" },
-    { name: "Blocto (Flow)", type: "flow", url: "https://blocto.io/" },
-  ];
-
   function createWalletUI() {
     if (document.getElementById("uniwallet-btn")) return;
 
-    // Button
+    // Floating Connect Button
     const btn = document.createElement("button");
     btn.id = "uniwallet-btn";
     btn.innerText = "Connect Wallet";
@@ -45,13 +25,9 @@
     });
 
     btn.onclick = async () => {
-      const detected = await window.UniWallet.detect();
-      const detectedNames = detected.map((w) => w.name);
+      const wallets = await window.UniWallet.detect();
 
-      // Separate detected vs undetected
-      const undetected = knownWallets.filter((w) => !detectedNames.includes(w.name));
-
-      // Modal
+      // Modal Wrapper
       const modal = document.createElement("div");
       Object.assign(modal.style, {
         position: "fixed",
@@ -76,18 +52,16 @@
       });
 
       const title = document.createElement("h3");
-      title.innerText = "Select Wallet";
+      title.innerText = "Select a Wallet";
       Object.assign(title.style, { marginBottom: "12px" });
       box.appendChild(title);
 
-      // === Detected Wallets ===
-      if (detected.length) {
-        const subTitle = document.createElement("p");
-        subTitle.innerText = "Detected:";
-        subTitle.style.fontWeight = "bold";
-        box.appendChild(subTitle);
-
-        detected.forEach((w) => {
+      if (!wallets.length) {
+        const none = document.createElement("p");
+        none.innerText = "No wallets detected on this device.";
+        box.appendChild(none);
+      } else {
+        wallets.forEach((w) => {
           const opt = document.createElement("button");
           opt.innerText = w.name;
           Object.assign(opt.style, {
@@ -101,19 +75,20 @@
             background: "#f9f9f9",
           });
 
+          // === Only connect AFTER the user chooses one ===
           opt.onclick = async () => {
             try {
+              let label = w.name;
               if (w.type === "evm") {
                 const accounts = await w.provider.request({ method: "eth_requestAccounts" });
-                btn.innerText = `${w.name}: ${accounts[0].slice(0, 6)}...`;
+                label = `${w.name}: ${accounts[0].slice(0, 6)}...`;
               } else if (w.type === "solana") {
                 const res = await w.provider.connect();
-                btn.innerText = `Solana: ${res.publicKey.toString().slice(0, 6)}...`;
+                label = `Solana: ${res.publicKey.toString().slice(0, 6)}...`;
               } else if (w.type === "tron") {
-                btn.innerText = `Tron: ${w.provider.defaultAddress.base58.slice(0, 6)}...`;
-              } else {
-                btn.innerText = w.name;
+                label = `Tron: ${w.provider.defaultAddress.base58.slice(0, 6)}...`;
               }
+              btn.innerText = label;
             } catch (e) {
               alert(`Failed to connect to ${w.name}`);
             }
@@ -124,34 +99,20 @@
         });
       }
 
-      // === Undetected Wallets (Download Links) ===
-      if (undetected.length) {
-        const subTitle = document.createElement("p");
-        subTitle.innerText = "Not Installed (Download):";
-        subTitle.style.fontWeight = "bold";
-        subTitle.style.marginTop = "12px";
-        box.appendChild(subTitle);
-
-        undetected.forEach((w) => {
-          const link = document.createElement("a");
-          link.innerText = `Get ${w.name}`;
-          link.href = w.url;
-          link.target = "_blank";
-          Object.assign(link.style, {
-            display: "block",
-            padding: "6px 0",
-            color: "#0066cc",
-            textDecoration: "none",
-          });
-          box.appendChild(link);
-        });
-      }
+      // Optional Download Section
+      const download = document.createElement("p");
+      download.innerHTML =
+        'Don’t see your wallet? <a href="https://metamask.io/download.html" target="_blank">Get MetaMask</a>';
+      Object.assign(download.style, {
+        marginTop: "14px",
+        fontSize: "14px",
+      });
+      box.appendChild(download);
 
       modal.appendChild(box);
       modal.onclick = (e) => {
         if (e.target === modal) document.body.removeChild(modal);
       };
-
       document.body.appendChild(modal);
     };
 
