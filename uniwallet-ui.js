@@ -5,14 +5,14 @@
     return;
   }
 
-  // Full wallet catalog
-  const WALLET_LIST = [
-    { name: "MetaMask", url: "https://metamask.io/download.html" },
-    { name: "Trust Wallet", url: "https://trustwallet.com/download" },
-    { name: "Coinbase Wallet", url: "https://www.coinbase.com/wallet" },
-    { name: "Binance Wallet", url: "https://www.bnbchain.org/en/binance-wallet" },
-    { name: "OKX Wallet", url: "https://www.okx.com/web3" },
-    { name: "Phantom Wallet", url: "https://phantom.app/download" },
+  // Catalog of wallets (name + official URL + optional icon)
+  const WALLET_CATALOG = [
+    { name: "MetaMask", url: "https://metamask.io/download.html", icon: "https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg" },
+    { name: "Trust Wallet", url: "https://trustwallet.com/download", icon: "https://trustwallet.com/assets/images/media/assets/trust-platform.svg" },
+    { name: "Coinbase Wallet", url: "https://www.coinbase.com/wallet", icon: "https://avatars.githubusercontent.com/u/1885080?s=280&v=4" },
+    { name: "Binance Wallet", url: "https://www.bnbchain.org/en/binance-wallet", icon: "https://cryptologos.cc/logos/binance-coin-bnb-logo.png" },
+    { name: "OKX Wallet", url: "https://www.okx.com/web3", icon: "https://www.okx.com/cdn/assets/imgs/221/C797A9C1B070D1A3.png" },
+    { name: "Phantom Wallet", url: "https://phantom.app/download", icon: "https://pbs.twimg.com/profile_images/1436371897553911809/nH0ebW1t_400x400.jpg" },
     { name: "Bybit Wallet", url: "https://www.bybit.com/en/web3-wallet/" },
     { name: "Kraken Wallet", url: "https://www.kraken.com/learn/what-is-kraken-wallet" },
     { name: "Bitget Wallet", url: "https://web3.bitget.com/" },
@@ -39,26 +39,26 @@
     { name: "Keplr", url: "https://www.keplr.app/" },
     { name: "Klever Wallet", url: "https://klever.org/" },
     { name: "Edge Wallet", url: "https://edge.app/" },
-    { name: "BlueWallet (Bitcoin)", url: "https://bluewallet.io/" },
+    { name: "BlueWallet", url: "https://bluewallet.io/" },
     { name: "Wallet of Satoshi", url: "https://www.walletofsatoshi.com/" },
     { name: "Tangem", url: "https://tangem.com/" },
     { name: "CoolWallet", url: "https://www.coolwallet.io/" },
     { name: "Ellipal", url: "https://www.ellipal.com/" },
-    { name: "Cake Wallet (Monero)", url: "https://cakewallet.com/" },
-    { name: "Phoenix Wallet (BTC Lightning)", url: "https://phoenix.acinq.co/" },
-    { name: "Blockstream Green (BTC)", url: "https://blockstream.com/green/" },
+    { name: "Cake Wallet", url: "https://cakewallet.com/" },
+    { name: "Phoenix Wallet", url: "https://phoenix.acinq.co/" },
+    { name: "Blockstream Green", url: "https://blockstream.com/green/" },
     { name: "NOW Wallet", url: "https://nowwallet.io/" },
     { name: "Pera Algo Wallet", url: "https://perawallet.app/" },
     { name: "NEAR Wallet", url: "https://wallet.near.org/" },
     { name: "Pontem Aptos Wallet", url: "https://pontem.network/" },
     { name: "Rainbow Wallet", url: "https://rainbow.me/" },
     { name: "Mycelium Wallet", url: "https://wallet.mycelium.com/" },
-    { name: "Monerujo (Monero)", url: "https://www.monerujo.io/" },
+    { name: "Monerujo", url: "https://www.monerujo.io/" },
     { name: "Unstoppable Wallet", url: "https://unstoppable.money/" },
     { name: "Onchain Wallet", url: "https://onchainwallet.io/" },
     { name: "Zypto Wallet", url: "https://www.zypto.com/" },
-    { name: "Cypherock (hardware)", url: "https://www.cypherock.com/" },
-    { name: "BRD Wallet (legacy)", url: "https://brd.com/" },
+    { name: "Cypherock", url: "https://www.cypherock.com/" },
+    { name: "BRD Wallet", url: "https://brd.com/" },
     { name: "Best Wallet", url: "https://bestwallet.com/" },
     { name: "MathWallet", url: "https://mathwallet.org/en-us/" }
   ];
@@ -66,6 +66,7 @@
   function createUI() {
     if (document.getElementById("uniwallet-btn")) return;
 
+    // Floating button
     const btn = document.createElement("button");
     btn.id = "uniwallet-btn";
     btn.innerText = "Connect Wallet";
@@ -82,7 +83,7 @@
     });
 
     btn.onclick = async () => {
-      const detected = await window.UniWallet.detect(); // from scripts 1–3
+      const detected = await window.UniWallet.detect();
       const detectedNames = detected.map((w) => w.name.toLowerCase());
 
       const modal = document.createElement("div");
@@ -106,7 +107,7 @@
         padding: "20px",
         maxHeight: "80%",
         overflowY: "auto",
-        width: "320px",
+        width: "360px",
       });
 
       const title = document.createElement("h3");
@@ -114,24 +115,41 @@
       Object.assign(title.style, { marginBottom: "12px" });
       box.appendChild(title);
 
-      WALLET_LIST.forEach((wallet) => {
+      WALLET_CATALOG.forEach((wallet) => {
         const available = detectedNames.includes(wallet.name.toLowerCase());
-        const opt = document.createElement("button");
-        opt.innerText = available ? `${wallet.name} (Available)` : `${wallet.name} (Get)`;
-        Object.assign(opt.style, {
-          display: "block",
-          width: "100%",
+
+        const row = document.createElement("div");
+        Object.assign(row.style, {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           padding: "8px",
           margin: "6px 0",
+          border: "1px solid #ddd",
           borderRadius: "6px",
-          border: "1px solid #ccc",
           cursor: "pointer",
           background: available ? "#f0fff0" : "#f9f9f9",
         });
 
+        // Icon
+        const img = document.createElement("img");
+        img.src = wallet.icon || "https://via.placeholder.com/24";
+        img.alt = wallet.name;
+        Object.assign(img.style, {
+          width: "24px",
+          height: "24px",
+          marginRight: "10px",
+        });
+
+        const name = document.createElement("span");
+        name.innerText = wallet.name + (available ? " (Available)" : "");
+
+        row.appendChild(img);
+        row.appendChild(name);
+
         if (available) {
           const w = detected.find((d) => d.name.toLowerCase() === wallet.name.toLowerCase());
-          opt.onclick = async () => {
+          row.onclick = async () => {
             try {
               if (w.type === "evm") {
                 const accounts = await w.provider.request({ method: "eth_requestAccounts" });
@@ -150,10 +168,10 @@
             document.body.removeChild(modal);
           };
         } else {
-          opt.onclick = () => window.open(wallet.url, "_blank");
+          row.onclick = () => window.open(wallet.url, "_blank");
         }
 
-        box.appendChild(opt);
+        box.appendChild(row);
       });
 
       modal.appendChild(box);
