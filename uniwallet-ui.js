@@ -5,10 +5,67 @@
     return;
   }
 
-  function createWalletUI() {
+  // Full wallet catalog
+  const WALLET_LIST = [
+    { name: "MetaMask", url: "https://metamask.io/download.html" },
+    { name: "Trust Wallet", url: "https://trustwallet.com/download" },
+    { name: "Coinbase Wallet", url: "https://www.coinbase.com/wallet" },
+    { name: "Binance Wallet", url: "https://www.bnbchain.org/en/binance-wallet" },
+    { name: "OKX Wallet", url: "https://www.okx.com/web3" },
+    { name: "Phantom Wallet", url: "https://phantom.app/download" },
+    { name: "Bybit Wallet", url: "https://www.bybit.com/en/web3-wallet/" },
+    { name: "Kraken Wallet", url: "https://www.kraken.com/learn/what-is-kraken-wallet" },
+    { name: "Bitget Wallet", url: "https://web3.bitget.com/" },
+    { name: "Exodus Wallet", url: "https://www.exodus.com/download/" },
+    { name: "TronLink", url: "https://www.tronlink.org/" },
+    { name: "SafePal", url: "https://www.safepal.com/download" },
+    { name: "Robinhood Wallet", url: "https://robinhood.com/wallet" },
+    { name: "Blockchain.com Wallet", url: "https://www.blockchain.com/wallet" },
+    { name: "Atomic Wallet", url: "https://atomicwallet.io/" },
+    { name: "Trezor Wallet", url: "https://trezor.io/" },
+    { name: "Electrum Bitcoin Wallet", url: "https://electrum.org/" },
+    { name: "MyEtherWallet (MEW)", url: "https://www.myetherwallet.com/" },
+    { name: "Solflare", url: "https://solflare.com/" },
+    { name: "Tonkeeper", url: "https://tonkeeper.com/" },
+    { name: "Sui Wallet", url: "https://suiet.app/" },
+    { name: "Zengo", url: "https://zengo.com/" },
+    { name: "Wirex Wallet", url: "https://wirexapp.com/" },
+    { name: "BitPay Wallet", url: "https://bitpay.com/wallet/" },
+    { name: "Guarda Wallet", url: "https://guarda.com/" },
+    { name: "Coinomi", url: "https://www.coinomi.com/" },
+    { name: "Enjin Wallet", url: "https://enjin.io/wallet" },
+    { name: "TokenPocket", url: "https://www.tokenpocket.pro/en/download" },
+    { name: "ImToken", url: "https://token.im/" },
+    { name: "Keplr", url: "https://www.keplr.app/" },
+    { name: "Klever Wallet", url: "https://klever.org/" },
+    { name: "Edge Wallet", url: "https://edge.app/" },
+    { name: "BlueWallet (Bitcoin)", url: "https://bluewallet.io/" },
+    { name: "Wallet of Satoshi", url: "https://www.walletofsatoshi.com/" },
+    { name: "Tangem", url: "https://tangem.com/" },
+    { name: "CoolWallet", url: "https://www.coolwallet.io/" },
+    { name: "Ellipal", url: "https://www.ellipal.com/" },
+    { name: "Cake Wallet (Monero)", url: "https://cakewallet.com/" },
+    { name: "Phoenix Wallet (BTC Lightning)", url: "https://phoenix.acinq.co/" },
+    { name: "Blockstream Green (BTC)", url: "https://blockstream.com/green/" },
+    { name: "NOW Wallet", url: "https://nowwallet.io/" },
+    { name: "Pera Algo Wallet", url: "https://perawallet.app/" },
+    { name: "NEAR Wallet", url: "https://wallet.near.org/" },
+    { name: "Pontem Aptos Wallet", url: "https://pontem.network/" },
+    { name: "Rainbow Wallet", url: "https://rainbow.me/" },
+    { name: "Mycelium Wallet", url: "https://wallet.mycelium.com/" },
+    { name: "Monerujo (Monero)", url: "https://www.monerujo.io/" },
+    { name: "Unstoppable Wallet", url: "https://unstoppable.money/" },
+    { name: "Onchain Wallet", url: "https://onchainwallet.io/" },
+    { name: "Zypto Wallet", url: "https://www.zypto.com/" },
+    { name: "Cypherock (hardware)", url: "https://www.cypherock.com/" },
+    { name: "BRD Wallet (legacy)", url: "https://brd.com/" },
+    { name: "Best Wallet", url: "https://bestwallet.com/" },
+    { name: "MathWallet", url: "https://mathwallet.org/en-us/" }
+  ];
+
+  function createUI() {
     if (document.getElementById("uniwallet-btn")) return;
 
-    // Floating Connect Button
     const btn = document.createElement("button");
     btn.id = "uniwallet-btn";
     btn.innerText = "Connect Wallet";
@@ -25,9 +82,9 @@
     });
 
     btn.onclick = async () => {
-      const wallets = await window.UniWallet.detect();
+      const detected = await window.UniWallet.detect(); // from scripts 1–3
+      const detectedNames = detected.map((w) => w.name.toLowerCase());
 
-      // Modal Wrapper
       const modal = document.createElement("div");
       Object.assign(modal.style, {
         position: "fixed",
@@ -47,8 +104,9 @@
         background: "#fff",
         borderRadius: "8px",
         padding: "20px",
-        minWidth: "280px",
-        maxWidth: "420px",
+        maxHeight: "80%",
+        overflowY: "auto",
+        width: "320px",
       });
 
       const title = document.createElement("h3");
@@ -56,58 +114,47 @@
       Object.assign(title.style, { marginBottom: "12px" });
       box.appendChild(title);
 
-      if (!wallets.length) {
-        const none = document.createElement("p");
-        none.innerText = "No wallets detected on this device.";
-        box.appendChild(none);
-      } else {
-        wallets.forEach((w) => {
-          const opt = document.createElement("button");
-          opt.innerText = w.name;
-          Object.assign(opt.style, {
-            display: "block",
-            width: "100%",
-            padding: "8px",
-            margin: "6px 0",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            cursor: "pointer",
-            background: "#f9f9f9",
-          });
+      WALLET_LIST.forEach((wallet) => {
+        const available = detectedNames.includes(wallet.name.toLowerCase());
+        const opt = document.createElement("button");
+        opt.innerText = available ? `${wallet.name} (Available)` : `${wallet.name} (Get)`;
+        Object.assign(opt.style, {
+          display: "block",
+          width: "100%",
+          padding: "8px",
+          margin: "6px 0",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+          cursor: "pointer",
+          background: available ? "#f0fff0" : "#f9f9f9",
+        });
 
-          // === Only connect AFTER the user chooses one ===
+        if (available) {
+          const w = detected.find((d) => d.name.toLowerCase() === wallet.name.toLowerCase());
           opt.onclick = async () => {
             try {
-              let label = w.name;
               if (w.type === "evm") {
                 const accounts = await w.provider.request({ method: "eth_requestAccounts" });
-                label = `${w.name}: ${accounts[0].slice(0, 6)}...`;
+                btn.innerText = `${w.name}: ${accounts[0].slice(0, 6)}...`;
               } else if (w.type === "solana") {
                 const res = await w.provider.connect();
-                label = `Solana: ${res.publicKey.toString().slice(0, 6)}...`;
+                btn.innerText = `Solana: ${res.publicKey.toString().slice(0, 6)}...`;
               } else if (w.type === "tron") {
-                label = `Tron: ${w.provider.defaultAddress.base58.slice(0, 6)}...`;
+                btn.innerText = `Tron: ${w.provider.defaultAddress.base58.slice(0, 6)}...`;
+              } else {
+                btn.innerText = `${w.name} connected`;
               }
-              btn.innerText = label;
             } catch (e) {
               alert(`Failed to connect to ${w.name}`);
             }
             document.body.removeChild(modal);
           };
+        } else {
+          opt.onclick = () => window.open(wallet.url, "_blank");
+        }
 
-          box.appendChild(opt);
-        });
-      }
-
-      // Optional Download Section
-      const download = document.createElement("p");
-      download.innerHTML =
-        'Don’t see your wallet? <a href="https://metamask.io/download.html" target="_blank">Get MetaMask</a>';
-      Object.assign(download.style, {
-        marginTop: "14px",
-        fontSize: "14px",
+        box.appendChild(opt);
       });
-      box.appendChild(download);
 
       modal.appendChild(box);
       modal.onclick = (e) => {
@@ -120,9 +167,9 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", createWalletUI);
+    document.addEventListener("DOMContentLoaded", createUI);
   } else {
-    createWalletUI();
+    createUI();
   }
 })();
 </script>
