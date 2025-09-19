@@ -1,1 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet Detection Test</title>
+</head>
+<body>
+
+  <h1>Multi-Chain Wallet Detection</h1>
+  <p>Open your browser console to see detected wallets.</p>
+
+  <!-- Load scripts in the correct order -->
+  <script src="uniwallet-base.js"></script>
+  <script src="uniwallet-extended.js"></script>
+  <script src="uniwallet-more.js"></script>
+
+  <script>
+    // Example usage after all scripts are loaded
+    (async () => {
+      const wallets = await window.UniWallet.detect();
+      console.log("Detected wallets:", wallets);
+    })();
+  </script>
+</body>
+</html>
 
