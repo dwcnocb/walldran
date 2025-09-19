@@ -8,7 +8,7 @@
 <body>
 
   <h1>Multi-Chain Wallet Detection</h1>
-  <p>Open your browser console to see detected wallets.</p>
+  <button id="connectBtn">Connect Wallet</button>
 
   <!-- Load scripts in the correct order -->
   <script src="uniwallet-base.js"></script>
@@ -16,12 +16,41 @@
   <script src="uniwallet-more.js"></script>
 
   <script>
-    // Example usage after all scripts are loaded
-    (async () => {
-      const wallets = await window.UniWallet.detect();
-      console.log("Detected wallets:", wallets);
-    })();
+    const btn = document.getElementById("connectBtn");
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.innerText = "Detecting...";
+
+      try {
+        const wallets = await window.UniWallet.detect();
+        console.log("Detected wallets:", wallets);
+
+        if (wallets.length > 0) {
+          const first = wallets[0];
+
+          // Basic connection examples:
+          if (first.type === "evm") {
+            const accounts = await first.provider.request({ method: "eth_requestAccounts" });
+            btn.innerText = `${first.name}: ${accounts[0]}`;
+          } else if (first.type === "solana") {
+            const res = await first.provider.connect();
+            btn.innerText = `${first.name}: ${res.publicKey.toString().slice(0, 6)}...`;
+          } else if (first.type === "tron") {
+            btn.innerText = `${first.name}: ${window.tronWeb.defaultAddress.base58}`;
+          } else {
+            btn.innerText = `${first.name} connected`;
+          }
+        } else {
+          btn.innerText = "No wallet found";
+        }
+      } catch (err) {
+        console.error(err);
+        btn.innerText = "Error";
+      } finally {
+        btn.disabled = false;
+      }
+    });
   </script>
 </body>
 </html>
-
